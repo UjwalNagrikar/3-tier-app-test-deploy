@@ -67,8 +67,8 @@ def init_database():
         )
         cursor = connection.cursor()
         
-        # Create database if not exists
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_config['database']}")
+        # Create database if not exists - USE BACKTICKS for database name with hyphens
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{db_config['database']}`")
         logger.info(f"✅ Database '{db_config['database']}' is ready!")
         
         cursor.close()
@@ -118,7 +118,7 @@ def initialize_app():
 # Start initialization when app starts
 initialize_app()
 
-# Flask routes (keep your existing routes the same)
+# Flask routes
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -190,4 +190,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)  # Set debug=False for production
+    app.run(host='0.0.0.0', port=5000, debug=False)
