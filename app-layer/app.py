@@ -3,56 +3,74 @@ import mysql.connector
 from mysql.connector import Error
 import os
 import time
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
 
-# Database configuration - use environment variables or defaults
-rds_host = os.getenv('DB_HOST', 'mysql')  # Use 'mysql' service name in Docker
-rds_user = os.getenv('DB_USER', 'admin')
-rds_password = os.getenv('DB_PASSWORD', 'Ujwal9494')
-database = os.getenv('DB_NAME', 'database-1')
+# Database configuration
+db_config = {
+    'host': os.getenv('DB_HOST', 'mysql-db'),
+    'user': os.getenv('DB_USER', 'admin'),
+    'password': os.getenv('DB_PASSWORD', 'Ujwal9494'),
+    'database': os.getenv('DB_NAME', 'database-1'),
+    'autocommit': True
+}
 
-def get_db_connection():
-    """Get database connection with retry logic"""
-    max_retries = 5
-    retry_delay = 5
-    
+def wait_for_db(max_retries=30, retry_delay=5):
+    """Wait for database to be ready"""
     for attempt in range(max_retries):
         try:
             connection = mysql.connector.connect(
-                host=rds_host,
-                user=rds_user,
-                password=rds_password,
-                database=database,
-                autocommit=True
+                host=db_config['host'],
+                user=db_config['user'],
+                password=db_config['password'],
+                port=3306
             )
-            return connection
+            connection.close()
+            logger.info("✅ Database is ready!")
+            return True
         except Error as e:
-            print(f"❌ Database connection attempt {attempt + 1} failed: {e}")
+            logger.info(f"⏳ Database not ready yet (attempt {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
-                print(f"Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
             else:
-                print("❌ Max retries reached. Could not connect to database.")
-                raise e
+                logger.error("❌ Max retries reached. Could not connect to database.")
+                return False
+
+def get_db_connection():
+    """Get database connection"""
+    try:
+        connection = mysql.connector.connect(**db_config)
+        return connection
+    except Error as e:
+        logger.error(f"❌ Database connection failed: {e}")
+        raise e
 
 def init_database():
     """Initialize database and create tables"""
     try:
+        # Wait for database to be ready first
+        if not wait_for_db():
+            raise Exception("Database not available")
+        
         # Connect without specifying database first
         connection = mysql.connector.connect(
-            host=rds_host,
-            user=rds_user,
-            password=rds_password
+            host=db_config['host'],
+            user=db_config['user'],
+            password=db_config['password'],
+            port=3306
         )
         cursor = connection.cursor()
         
         # Create database if not exists
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database}")
-        print(f"✅ Database '{database}' is ready!")
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_config['database']}")
+        logger.info(f"✅ Database '{db_config['database']}' is ready!")
         
-        # Close initial connection
         cursor.close()
         connection.close()
         
@@ -71,22 +89,36 @@ def init_database():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        print("✅ Table 'contact_queries' is ready!")
+        logger.info("✅ Table 'contact_queries' is ready!")
         
         cursor.close()
         db.close()
         
     except Error as e:
-        print("❌ Database initialization failed:", e)
+        logger.error(f"❌ Database initialization failed: {e}")
         raise e
 
-# Initialize database on startup
-try:
-    init_database()
-except Exception as e:
-    print(f"Failed to initialize database: {e}")
+# Initialize database on startup with error handling
+def initialize_app():
+    """Initialize the application with retry logic"""
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            init_database()
+            logger.info("✅ Application initialized successfully!")
+            return
+        except Exception as e:
+            logger.error(f"❌ Initialization attempt {attempt + 1} failed: {e}")
+            if attempt < max_retries - 1:
+                logger.info(f"Retrying in 10 seconds...")
+                time.sleep(10)
+            else:
+                logger.error("❌ Max initialization retries reached. Application may not function properly.")
 
-# Flask routes
+# Start initialization when app starts
+initialize_app()
+
+# Flask routes (keep your existing routes the same)
 @app.route('/')
 def index():
     return render_template("index.html")
@@ -137,7 +169,7 @@ def admin():
     try:
         db = get_db_connection()
         cursor = db.cursor()
-        cursor.execute("SELECT name, email, phone, message FROM contact_queries ORDER BY id DESC")
+        cursor.execute("SELECT name, email, phone, message, created_at FROM contact_queries ORDER BY id DESC")
         results = cursor.fetchall()
         return render_template("admin.html", queries=results)
     except Exception as e:
@@ -158,4 +190,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)  # Set debug=False for production
