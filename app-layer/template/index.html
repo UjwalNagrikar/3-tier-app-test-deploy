@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UN Enterprises - Global Import Export</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                        {{ message }}
+                        <button class="close-alert" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo animate-on-load">UN Enterprises</div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" class="nav-link animate-on-load">Home</a></li>
+                <li><a href="#services" class="nav-link animate-on-load">Services</a></li>
+                <li><a href="#about" class="nav-link animate-on-load">About</a></li>
+                <li><a href="#contact" class="nav-link animate-on-load">Contact</a></li>
+            </ul>
+            <div class="mobile-menu" id="mobileMenu" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h1>🌟 Why Choose UN Enterprises?</h1>
+            <p>At UN Enterprises, we are committed to making international trade simple, efficient, and reliable. 
+                Whether you're importing cutting-edge electronics or exporting Indian excellence to the world, we stand by your side at every step.</p>
+            <a href="#contact" class="cta-button">Get Started Today</a>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <h2 class="section-title animate-on-load">Our Services</h2>
+            <div class="services-grid">
+                <div class="service-card fade-in">
+                    <div class="service-icon">🚢</div>
+                    <h3>Import Services</h3>
+                    <p>Comprehensive import solutions including customs clearance, documentation, and logistics coordination for smooth international procurement.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">📦</div>
+                    <h3>Export Services</h3>
+                    <p>End-to-end export management from product sourcing to final delivery, ensuring compliance with international trade regulations.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">📋</div>
+                    <h3>Documentation</h3>
+                    <p>Expert handling of all trade documentation including LC, certificates, permits, and customs declarations with precision and accuracy.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">🌍</div>
+                    <h3>Global Logistics</h3>
+                    <p>Efficient supply chain management with worldwide shipping solutions, warehousing, and real-time tracking capabilities.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">⚖️</div>
+                    <h3>Compliance</h3>
+                    <p>Ensuring full regulatory compliance across all jurisdictions with updated knowledge of international trade laws and requirements.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">💼</div>
+                    <h3>Consultation</h3>
+                    <p>Strategic trade advisory services to optimize your international business operations and identify new market opportunities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title animate-on-load">About UN Enterprises</h2>
+            <div class="about-content">
+                <div class="about-text animate-on-load">
+                    <p>UN Enterprises is a leading import-export company with years of expertise in international trade. We specialize in facilitating seamless global commerce through our comprehensive range of services.</p>
+                    
+                    <p>Our team of experienced professionals understands the complexities of international trade and works diligently to ensure your business operations run smoothly across borders. From small-scale imports to large commercial exports, we handle every aspect of your trade requirements.</p>
+                    
+                    <p>With our extensive network of global partners and deep understanding of regulatory frameworks, we provide reliable, efficient, and cost-effective solutions for businesses looking to expand their international presence.</p>
+                </div>
+                <div class="about-image slide-in-right">
+                    <div>
+                        <h3>🌐 Global Reach</h3>
+                        <p>Connecting businesses worldwide with reliable trade solutions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title fade-in">Get In Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info fade-in">
+                    <h3>Contact Information</h3>
+                    <div class="contact-item">
+                        <span>📍</span>
+                        <div>
+                            <strong>Address:</strong><br>
+                            Nagpur, Maharashtra, India<br>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span>📞</span>
+                        <div>
+                            <strong>Phone:</strong><br>
+                            +91 84463 62075
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span>✉️</span>
+                        <div>
+                            <strong>Email:</strong><br>
+                            ujjwalnagrikar@gmail.com
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form slide-in-left" method="POST" action="/submit">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>                  
+                    <div class="form-group">
+                        <label for="message">Your Message / Query</label>
+                        <textarea id="message" name="message" rows="5" placeholder="Tell us about your requirements..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p><b>Thank you for visiting UN Enterprises</b></p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
